@@ -1,0 +1,6 @@
+@Harden_a_CRUD_Web_API_HostAddress = http://localhost:5150
+
+GET {{Harden_a_CRUD_Web_API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
