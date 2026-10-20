@@ -13,16 +13,16 @@ namespace Harden_a_CRUD_Web_API.Controllers
             new Product
             {
                 Id = 1,
-                Name = "Mechanical Keyboard",
-                Price = 3500,
-                SalePrice = 3000
+                Name = "Umbrella",
+                Price = 200,
+                SalePrice = 150
             },
             new Product
             {
                 Id = 2,
-                Name = "Gaming Mouse",
-                Price = 1500,
-                SalePrice = 1200
+                Name = "Samung S25",
+                Price = 45000,
+                SalePrice = 30000
             }
         };
 
@@ -40,20 +40,21 @@ namespace Harden_a_CRUD_Web_API.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            return Ok(new
+            var response = new PagedResponse<Product>
             {
-                data = items,
-                meta = new
+                Data = items,
+                Meta = new MetaData
                 {
-                    page,
-                    pageSize,
-                    totalItems,
-                    totalPages =
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalItems = totalItems,
+                    TotalPages =
                         (int)Math.Ceiling(
-                            totalItems /
-                            (double)pageSize)
+                            totalItems / (double)pageSize)
                 }
-            });
+            };
+
+            return Ok(response);
         }
 
         [HttpGet("{id:int}")]
@@ -75,10 +76,9 @@ namespace Harden_a_CRUD_Web_API.Controllers
         public ActionResult<Product> Create(
             CreateProductRequest request)
         {
-            var existing = _products
-                .FirstOrDefault(
-                    p => p.Name.ToLower()
-                    == request.Name.ToLower());
+            var existing = _products.FirstOrDefault(
+                p => p.Name.ToLower() ==
+                     request.Name.ToLower());
 
             if (existing is not null)
             {
@@ -100,8 +100,44 @@ namespace Harden_a_CRUD_Web_API.Controllers
                 nameof(GetById),
                 new { id = product.Id },
                 product);
-        }​‌
-        
+        }
 
+        [HttpPut("{id:int}")]
+        public ActionResult<Product> Update(
+            int id,
+            UpdateProductRequest request)
+        {
+            var product = _products
+                .FirstOrDefault(p => p.Id == id);
+
+            if (product is null)
+            {
+                throw new NotFoundException(
+                    $"Product {id} was not found.");
+            }
+
+            product.Name = request.Name;
+            product.Price = request.Price;
+            product.SalePrice = request.SalePrice;
+
+            return Ok(product);
+        }
+
+        [HttpDelete("{id:int}")]
+        public IActionResult Delete(int id)
+        {
+            var product = _products
+                .FirstOrDefault(p => p.Id == id);
+
+            if (product is null)
+            {
+                throw new NotFoundException(
+                    $"Product {id} was not found.");
+            }
+
+            _products.Remove(product);
+
+            return NoContent();
+        }
     }
-      
+}
