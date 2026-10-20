@@ -1,14 +1,12 @@
-﻿namespace Harden_a_CRUD_Web_API.Handlers
-{
-    using Harden_a_CRUD_Web_API.Exceptions;
-    using Microsoft.AspNetCore.Diagnostics;
-    using Microsoft.AspNetCore.Mvc;
+﻿using Harden_a_CRUD_Web_API.Exceptions;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 
-    public class GlobalExceptionHandler
-        : IExceptionHandler
+namespace Harden_a_CRUD_Web_API.Handlers
+{
+    public class GlobalExceptionHandler : IExceptionHandler
     {
-        private readonly ILogger<GlobalExceptionHandler>
-            _logger;
+        private readonly ILogger<GlobalExceptionHandler> _logger;
 
         public GlobalExceptionHandler(
             ILogger<GlobalExceptionHandler> logger)
@@ -24,32 +22,36 @@
             var (status, title) = ex switch
             {
                 NotFoundException =>
-                    (404, "Resource not found"),
+                    (StatusCodes.Status404NotFound, "Resource not found"),
 
                 ConflictException =>
-                    (409, "Conflict"),
+                    (StatusCodes.Status409Conflict, "Conflict"),
 
                 _ =>
-                    (500, "An unexpected error occurred")
+                    (StatusCodes.Status500InternalServerError,
+                     "An unexpected error occurred")
             };
 
             _logger.LogError(
                 ex,
-                "Unhandled exception");
+                "Unhandled exception occurred.");
 
             var problem = new ProblemDetails
             {
-                Status = status,
+                Type = $"https://httpstatuses.com/{status}",
                 Title = title,
+                Status = status,
                 Detail = status == 500
-                    ? null
-                    : ex.Message
+                    ? "An unexpected error occurred."
+                    : ex.Message,
+                Instance = context.Request.Path
             };
 
             context.Response.StatusCode = status;
 
-            await context.Response
-                .WriteAsJsonAsync(problem, ct);
+            await context.Response.WriteAsJsonAsync(
+                problem,
+                ct);
 
             return true;
         }

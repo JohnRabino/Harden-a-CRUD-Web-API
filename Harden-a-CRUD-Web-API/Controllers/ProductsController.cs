@@ -20,7 +20,7 @@ namespace Harden_a_CRUD_Web_API.Controllers
             new Product
             {
                 Id = 2,
-                Name = "Samung S25",
+                Name = "Samsung S25",
                 Price = 45000,
                 SalePrice = 30000
             }
@@ -33,6 +33,9 @@ namespace Harden_a_CRUD_Web_API.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 5)
         {
+            page = page < 1 ? 1 : page;
+            pageSize = pageSize < 1 ? 5 : pageSize;
+
             var totalItems = _products.Count;
 
             var items = _products
@@ -48,14 +51,14 @@ namespace Harden_a_CRUD_Web_API.Controllers
                     Page = page,
                     PageSize = pageSize,
                     TotalItems = totalItems,
-                    TotalPages =
-                        (int)Math.Ceiling(
-                            totalItems / (double)pageSize)
+                    TotalPages = (int)Math.Ceiling(
+                        totalItems / (double)pageSize)
                 }
             };
 
             return Ok(response);
         }
+
 
         [HttpGet("{id:int}")]
         public ActionResult<Product> GetById(int id)
